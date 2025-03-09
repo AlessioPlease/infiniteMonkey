@@ -4,51 +4,36 @@ import java.time.*;
 public class BackgroundThread {
 
 	Timer statusTimer;
-	private static final int updateInterval = 5000;
+	private final int updateInterval = 5000;
+	Monkey monkey;
 
 	private final Thread t = new Thread(() -> {
-
 		statusTimer = new Timer();
 		statusTimer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
 				update();
 			}
-		}, 0, updateInterval);
+		}, 10, updateInterval);
 	});
 
-	BackgroundThread() {
+	BackgroundThread(Monkey monkey) {
+		this.monkey = monkey;
 		t.start();
 	}
 
-
-
 	private void update() {
-		Instant start = Monkey.getStartTime() != null ? Monkey.getStartTime() : Instant.now();
+		Instant startTime = Main.getStartTime() != null ? Main.getStartTime() : Instant.now();
 		Instant now = Instant.now();
-		Duration timeElapsed = Duration.between(start, now);
+		Duration timeElapsed = Duration.between(startTime, now);
 
-		printStatus(Monkey.getAttempts(), timeElapsed);
+		printStatus(monkey.getAttempts(), timeElapsed);
 	}
 
+	private void printStatus(long attempts, Duration duration) {
+		System.out.println("\nCurrent number of attempts: " + attempts);
 
-
-	private void printStatus(long attempts, Duration timeElapsed) {
-
-		System.out.println("Current number of attempts: " + attempts);
-		if (timeElapsed.toMinutes() == 0) {
-			System.out.println("Time elapsed: " + timeElapsed.toSecondsPart() + " seconds");
-		} else if (timeElapsed.toMinutes() == 1){
-			System.out.println("Time elapsed: " + timeElapsed.toMinutes() + " minute and " + timeElapsed.toSecondsPart() + " seconds");
-		} else if (timeElapsed.toHours() == 0){
-			System.out.println("Time elapsed: " + timeElapsed.toMinutes() + " minutes and " + timeElapsed.toSecondsPart() + " seconds");
-		} else if (timeElapsed.toHours() == 1) {
-			System.out.println("Time elapsed: : " + timeElapsed.toHours() + " hour " + timeElapsed.toMinutesPart() + " minutes and " + timeElapsed.toSecondsPart() + " seconds");
-		} else {
-			System.out.println("Time elapsed: " + timeElapsed.toHours() + " hours " + timeElapsed.toMinutesPart() + " minutes and " + timeElapsed.toSecondsPart() + " seconds");
-		}
+		Main.printTimeElapsed(duration);
 	}
-
-
 
 	public void shutdown() {
 		statusTimer.cancel();
